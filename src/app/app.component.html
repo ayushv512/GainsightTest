@@ -1,0 +1,175 @@
+<div class="container">
+  <div class="row">
+    <h2><strong>Employee List</strong></h2>
+    <div class="col-md-9">
+        <input type="text" style="float:right;width:35%;" placeholder="Search by name, email, title, location" [(ngModel)]="searchValue" class="form-control">
+    </div>
+    <div class="col-md-3">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#employeeForm" #personBtn (click)="onAddPersonClick()">
+          <span class="fa fa-plus" style="margin-right:7%;"></span>Person
+        </button>   
+        <button type="button" class="btn btn-primary" style="float:right;" data-toggle="modal" data-target="#organisationtree"><span class="fa fa-sitemap" style="margin-right:4%;"></span>Orgainisation Tree</button>   
+    </div>
+    <div style="margin-top:5%;">
+        <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th style="width:20%;text-align:center">Name</th>
+                <th style="width:20%;text-align:center">Email</th>
+                <th style="width:15%;text-align:center">Social Links</th>
+                <th style="width:15%;text-align:center">Title</th>
+                <th style="width:20%;text-align:center">Location</th>
+                <th style="width:10%;text-align:center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="employeeList.length == 0">
+                <td colspan="6" align="center">No employees</td>
+              </tr>
+            </tbody>
+            <tbody>
+              <tr *ngFor="let item of employeeList | nameFilter :searchValue;">
+                <td align="center">{{ item.firstname + " " + item.lastname }}</td>
+                <td align="center">{{ item.email }}</td>
+                <td align="center">
+                  <a *ngIf="item.social_urls.facebook !== undefined" href="{{item.social_urls.facebook}}" target="_blank">
+                    <span class="fa fa-facebook"></span>
+                  </a>
+                  <a *ngIf="item.social_urls.linkedin !== undefined" href="{{item.social_urls.linkedin}}" target="_blank">
+                    <span class="fa fa-linkedin"></span>
+                  </a>
+                  <a *ngIf="item.social_urls.twitter!== undefined" href="{{item.social_urls.twitter}}" target="_blank">
+                    <span class="fa fa-twitter	"></span>
+                  </a>
+                </td>  
+                <td align="center">{{ item.title }}</td>
+                <td align="center">{{ item.location }}</td>
+                <td>
+                  <button class="fa fa-edit" style="border: none;background: transparent;" title="Edit" (click)="onEditRecord(item)"></button>
+                  <button class="fa fa-trash" style="border: none;background: transparent;" title="Delete" (click)="onDeleteRecord(item)"></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+    </div>
+  </div>
+</div>
+
+
+<div id="employeeForm" class="modal fade" role="dialog">
+    <div class="modal-dialog" style="width:30%;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Employee Form</h4>
+        </div>
+        <div class="modal-body">
+            <form #employeeForm="ngForm" (ngSubmit)="onSubmitForm(employeeForm)">
+              <div class="form-group">
+                  <label for="firstname">First Name:</label>
+                  <input type="text" #firstNameRef="ngModel" required class="form-control" name="firstname" [(ngModel)]="firstName" placeholder="Enter your first name">
+                  <div [hidden]="firstNameRef.valid || firstNameRef.pristine" class="alert alert-danger">
+                    Please enter first name.
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label for="lastname">Last Name:</label>
+                  <input type="text" #lastNameRef="ngModel" required  class="form-control" name="lastname" [(ngModel)]="lastName" placeholder="Enter your last name">
+                  <div [hidden]="lastNameRef.valid || lastNameRef.pristine" class="alert alert-danger">
+                    Please enter last name.
+                  </div>
+              </div>
+              <div class="form-group">
+                <label for="email">Email address:</label>
+                <input type="email" #emailRef="ngModel"  pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$" required class="form-control" name="email" [(ngModel)]="email" placeholder="Enter your email">
+                <div *ngIf="emailRef.errors && (emailRef.dirty || emailRef.touched)" class="alert alert-danger">
+                  <div [hidden]="!emailRef.errors.required" >
+                    Please enter email.
+                  </div>
+                  <div [hidden]="!emailRef.errors.pattern" >
+                    Please enter email in correct format.
+                  </div>
+                </div>
+                
+              </div>
+              <div class="form-group">
+                <label for="title">Title: </label>
+                <select type="text" #titleRef="ngModel" required class="form-control" name="title" [(ngModel)]="title">
+                    <option value="">Select Title</option>
+                    <option *ngFor="let item of titleList" >
+                      {{item}}
+                    </option>
+                 </select> 
+                <div [hidden]="titleRef.valid || titleRef.pristine" class="alert alert-danger">
+                  Please enter title.
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="reporting">Reporting To:</label>
+                <select type="text" #roleRef="ngModel" class="form-control" name="reportingTo" [(ngModel)]="reportingTo"> 
+                  <option value="">Select Reporting</option>
+                  <option *ngFor="let item of reportingList" >
+                    {{item}}
+                  </option>   
+                </select>               
+                <div [hidden]="roleRef.valid || roleRef.pristine" class="alert alert-danger">
+                  Please enter role.
+                </div>
+             </div>
+             <div class="form-group">
+                <label for="accounts">Social Accounts URL:</label>
+                <textarea  #accountsRef="ngModel" required class="form-control" name="accounts"  [(ngModel)]="accounts" placeholder="Enter your social account URLs separated by ;(Facebook, LinkedIn, Twitter only)"></textarea>
+                <div [hidden]="accountsRef.valid || accountsRef.pristine" class="alert alert-danger">
+                  Please enter social accounts.
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="location">Location:</label>
+                <input type="text" #locationRef="ngModel" required class="form-control" name="location" [(ngModel)]="location" placeholder="Enter your location">
+                <div [hidden]="locationRef.valid || locationRef.pristine" class="alert alert-danger">
+                  Please enter location.
+                </div>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" name="primarycompany" ngModel> Is primary company?</label>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" [disabled]="employeeForm.invalid" id="addUser" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" #closeBtn>Close</button>
+              </div>
+            </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="organisationtree" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Organisation Tree</h4>
+          </div>
+          <div class="modal-body">
+            <ul *ngFor="let item of employeeTreeList;">
+              <li>
+                {{item.name}}
+                <ul *ngFor="let item1 of item.reporting;">
+                    <li>
+                      {{item1.name}} 
+                      <ul *ngFor="let item2 of item1.reporting;">
+                          <li>
+                            {{item2.name}} 
+                          </li>
+                      </ul>
+                    </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
